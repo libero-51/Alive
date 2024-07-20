@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+<title>Vers 3.0</title>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <script src="../../__js/babylon.js"></script>
+  <script src="../../__js/babylonjs.serializers.min.js"></script> 
+  <script src="../../__js/babylonjs.materials.min.js"></script> 
+  <script src="../_Script/VerText.js"></script>
+  <script src="../_Script/locstrg.js"></script>
+  <script src="../_Script/tools.js"></script>
+  <script src="../_Script/edit.js"></script>
+  <script src="../_Script/animations.js"></script>
+  <script src="../_Script/skel.js"></script>
+  <script src="jscss/Data.js"></script>
+  <link href="../_Script/ini.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table border="2">
+  <tr><td style="width: 90px; font-size: 12pt;">
+    <select id="OptDwn" onclick="OptDownload(this.value)"style="font-size:12pt;background-color:#aaa;width: 90px;">
+      <option value="">File</option>
+      <option  value="dtjs">Data.js</option>
+      <option  value="uvmp">UVMap  </option> 
+      <option  value="uvvr">Texture</option> 
+      <option  value="baby">Babylon</option>
+      <option  value="gltf">glTF</option>
+      <option  value="glbb">glb</option>
+      <option  value="help">Help</option>
+    </select><br>
+    <select id="OptEdit" onclick="OptEdit(this.value)" style="font-size:12pt;background-color:#aaa;width: 90px;">
+      <option value=""   >Options</option>
+      <option value="Sav">Save   </option>
+      <option value="Rst">Reset</option>      <!-- alert reset only name item in localstorage -->
+      <option value="WIt">View Items</option>     
+      <option value="Stt">Settings</option>     
+    </select><br>
+<!--
+    <button class="buta" onclick="MyTest();">Test</button>&nbsp;&nbsp;&nbsp;
+-->
+    <select id="CamEdit" onclick="CamEdit(this.value)" style="font-size:12pt;background-color:#aaa;width: 90px;">
+      <option value=""   >Camera</option>
+      <option value="0"  >ArcRot</option>
+      <option value="1"  >Free</option>
+    </select>   
+  </td><td style="width: 200px;font-size: 12px;">
+    Speed:<input id="SpeedSld" type="range"min="0"max="100" value="10" onchange="Speed(this.value)
+    "style="width:170px; accent-color:red" data-toggle="tooltip" title="Speed"><br>
+    Zoom :<input id="ZoomSld"  type="range"min="1"max="100" onchange="Zoom(this.value)" style="width:170px;
+    accent-color:green" data-toggle="tooltip" title="Zoom"><br>
+    ---Y-- :<input id="YSld"  type="range"min="-10"max="10" onchange="ZoomY(this.value)" style="width:170px"
+    data-toggle="tooltip" title="--Y--" value="0"><br>
+  </td><td id="divEdit" style="width:120px;">
+    <button class="buta" onclick="selwfr()">wireframe</button><br>
+    <button id="btpoint" class="buta" onclick="selpnt()">points</button><br>
+    <button id="skvwopt" class="buta" onclick="skeView()">skeleton</button>
+  </td><td>
+    <div style="display:none">
+      <img id="iimg" src="textures/texture.png">
+    </div>
+    <div id="splsh" style="position: absolute; left: 300;   display:block ">
+      <img  src="../_Script/velo.png" width="880" height="80" class="bg-image">
+    </div>
+    <button class="but3" onclick="selSph(10)">++</button>
+    <button class="but3" onclick="selSph(1)">+</button><br>
+    <button class="but3" onclick="selSph(-10)">--</button>
+    <button class="but3" onclick="selSph(-1)">-</button>
+  </td><td>
+    Vertex index<br>  
+    <input id="spk0" type="text" value="0">
+    <input id="spk1" type="text" value="" >
+    <input id="spk2" type="text" value="" >
+    <input id="spk3" type="text" value="" >
+    <input id="spk4" type="text" value="" ><br>
+    <input id="spm0" type="text" value="0">
+    <input id="spm1" type="text" value="" >
+    <input id="spm2" type="text" value="" >
+    <input id="spm3" type="text" value="" >
+    <input id="spm4" type="text" value="" >
+  </td><td>
+    <------ X, Y, Z -----><br>
+    <input  class="inp2" id="vrtx"  type="text" value="0"> selected<br>
+    <input  class="inp2" id="vrtm"  type="text" value=""> mirror(x)
+  </td><td width="270" style="background-color: #ffa;">
+    <input id="selbd" type="radio" name="seledit" onclick="OptEdit('EBd')"checked>Bone&emsp;&emsp;&emsp;
+    <button id="btVer"  class="buta" onclick="DivVer(0)">Ver 0.0</button>
+
+    <br>
+    <input id="sel3d" type="radio" name="seledit" onclick="OptEdit('E3d')">3d
+    <input id="sel2d" type="radio" name="seledit" onclick="OptEdit('E2d')">2d<
+    <input id="selfc" type="radio" name="seledit" onclick="OptEdit('EFc')">&#916<br>
+  </td></tr>
+  <tr><td rowspan="3" colspan="3">
+    <canvas id="Canvas" width="450" height="500"></canvas>
+  </td><td rowspan="3" colspan="3"> 
+  <!--------------------------------------------------------------------------------------------------------->    
+  <!---------------------------------------------------divCanvat----------->
+    <div id="divCanvat" style="display: none;overflow: auto;">
+      <canvas id="Canvat"width="600"height="500" style="width:600px;height:500px" onclick="SelectFace(event)"></canvas>
+    </div>
+  <!---------------------------------------------------divFrames----------->
+    <div id="divFrames" style="display: block; background-color: #afa;height: 500px;width: 600px;">
+      <span style="font-size:16pt;background-color:#afa;color:black;font-weight:bolder;">Animations:</span>
+      &nbsp;&nbsp;
+      frames/sec:<input id="Nfrs"type="text"value="20" style="width:40px" onchange="AnimData(-3,this.value)">
+      &nbsp;
+      group:
+      <select id="GrpEdit" onchange="GrpEdit(this.value)"style="font-size:12pt;background-color:#fff; font-weight: bolder ; width:40px;">
+        <option value=0>0</option>
+        <option value=1>1</option>
+        <option value=2>2</option>
+        <option value=3>3</option>
+        <option value=4>4</option>
+      </select>
+      from:<input id="Nfrm" type="text"  value="300" style="width:40px" onchange="AnimData(-2,this.value)">
+      to:<input id="Nfto" type="text"  value="0" style="width:40px" onchange="AnimData(-4,this.value)">
+      <br><br>
+      bones: 
+      <select id="OptBones2" style="font-size:12pt;background-color:#fff;width: 100px;height: 30px; font-weight:bolder ;"   onchange="AnimData(-1,0)">
+        <script>WriteBonesPrnt();</script>
+      </select>
+      &nbsp;&nbsp;&nbsp;
+      Function Type : 
+    <select id="Atyp" onchange="AnimData(4,this.value)"style="font-size:12pt;background-color:#fff; font-weight: bolder ; width:100px;">
+        <option value=0>Sin</option>
+        <option value=1>Trap</option>
+        <option value=2>Round</option>
+        <option value=3>Move</option>
+    </select>
+      &nbsp;&nbsp;&nbsp;
+      <button class="butc" onclick="StopA(-1)"><</button>
+      <input id="fnvl" type="text"  value="0" style="width:30px;font-size:16pt;" onclick="StopA(0)">
+      <button class="butc" onclick="StopA(1)">></button>
+      <br><br>
+      <input id="selX" type="radio" name="selxyz" checked  onclick="AnimData(-1,0)">
+      <span style="font-size : 18pt;font-weight: bolder;color:#000;background-color:#afa;">X</span>
+      <input id="selY" type="radio" name="selxyz"          onclick="AnimData(-1,0)">
+      <span style="font-size : 18pt;font-weight: bolder;color:#f00;background-color:#afa;">Y</span>
+      <input id="selZ" type="radio" name="selxyz"          onclick="AnimData(-1,0)">
+      <span style="font-size : 18pt;font-weight: bolder;color:#00f;background-color:#afa;">Z</span>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      Position<input id="selPos" type="radio" name="selcoo"checked onclick="AnimData(-1,0)">
+      <input type="radio" name="selcoo" onclick="AnimData(-1,0)">Rotation<br>
+      <br>&nbsp;
+Size:  <input id="Anm0"type="text"value="0"style="width:50px;height:20px"onclick="AnimData(0,0)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Speed: <input id="Anm1"type="text"value="0"style="width:50px;height:20px"onclick="AnimData(1,0)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Phase: <input id="Anm2"type="text"value="0"style="width:50px;height:20px"onclick="AnimData(2,0)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Offset:<input id="Anm3"type="text"value="0"style="width:50px;height:20px"onclick="AnimData(3,0)"><br>
+<input id="Asiz"type="range"min="0"max="2"step="0.01"value="0"onchange ="AnimData(0,this.value)"style="width:128px">
+<input id="Aspd"type="range"min="0"max="8"step="0.1"value="0"onchange ="AnimData(1,this.value)"style="width:128px">
+<input id="Aphs"type="range"min="-180"max="180"     value="0"onchange ="AnimData(2,this.value)"style="width:128px">
+<input id="Aofs"type="range"min="-400"max="400"     value="0"onchange ="AnimData(3,this.value)"style="width:128px"><br>
+      <canvas id="Canvan" width="600" height="300" style="background-color: white"></canvas>
+    </div> 
+  <!---------------------------------------------------divVers   ----------->
+    <div id="divVers" style="display: none; width: 600px;" >
+      <textarea id="Textarea" style="width:590px;height: 490px;"></textarea>
+    </div> 
+  <!--------------------------------------------------------------------------------------------------------->    
+  </td></tr>
+  <tr><td id="tdEdit" rowspan="2" style="background-color: #fa0;">
+    <div id="divBon" style="display:block;" > <!-----------------------------------------------Bones--------->
+      <span style="font-size : 20pt; background-color: #fa0; color: black;font-weight: bolder;">Name : </span>
+      <select onchange="Redirect(this.value);"
+        style="font-size :18pt;background-color: orange;font-weight: bolder;">
+        <script>WriteOptions();</script>
+      </select><br>
+      <span id="DataSkel" style="font-size : 12pt; background-color: #fa0; color: black;">....</span><br>
+      <select id="OptBones" style="font-size:14pt;background-color:#fa0;width: 200px;height: 35px; font-weight:bolder ;" onchange="Part(this.value)">
+      <!-------------------WriteBonesList()----------------->  
+      </select><br>
+      <div id="DvBnsEdt" style="display:none;">
+        <br>
+        <button class="buta" onclick="BoneCmd(0)"disabled>Del</button><br><br>
+        <button class="buta" onclick="BoneCmd(1)"disabled>Add base 2</button><br><br>
+        <button class="buta" onclick="BoneCmd(2)"disabled>Add clone</button><br><br>
+        <button class="buta" onclick="BoneCmd(3)">Add mirror(x)</button>
+      </div>
+    </div>
+    <div id="divE3d" style="display: none;"> <!--------------------------------------Edit 3D-------->
+      <span style="font-size : 20pt;background-color:#ddd;color: black;font-weight: bolder;">Edit 3d vertex</span>
+      <button style="position: absolute; left: 1320px;" onclick="OptEdit('Bon')">X</button><br><br>
+      <span style="font-size : 16pt;background-color:#ddd;color: black;"><-----Selection Type-----></span><br>
+      <img src="../_Script/SelectColor3d.png"><br>
+      <input id="selty0" type="radio" name="selvrtx" onclick="selVertex(0)" checked="checked">one
+      <input id="selty1" type="radio" name="selvrtx" onclick="selVertex(1)" disabled>clones
+      <input id="selty2" type="radio" name="selvrtx" onclick="selVertex(2)" disabled>all<br><br>
+      Vertex index : <input  class="inp9" id="spkE"  type="text"><br>
+      X :
+      <button class="but9" onclick="Edit3dVertex(0,-.1)">--</button>
+      <button class="but9" onclick="Edit3dVertex(0,-.01)">-</button>
+      <input  class="inp9" id="edvx"  type="text">
+      <button class="but9" onclick="Edit3dVertex(0, .01)">+</button>
+      <button class="but9" onclick="Edit3dVertex(0, .1)">++</button><br>
+      Y :
+      <button class="but9" onclick="Edit3dVertex(1,-.1)">--</button>
+      <button class="but9" onclick="Edit3dVertex(1,-.01)">-</button>
+      <input  class="inp9" id="edvy"  type="text">
+      <button class="but9" onclick="Edit3dVertex(1, .01)">+</button>
+      <button class="but9" onclick="Edit3dVertex(1, .1)">++</button><br>
+      Z :
+      <button class="but9" onclick="Edit3dVertex(2,-.1)">--</button>
+      <button class="but9" onclick="Edit3dVertex(2,-.01)">-</button>
+      <input  class="inp9" id="edvz"  type="text">
+      <button class="but9" onclick="Edit3dVertex(2, .01)">+</button>
+      <button class="but9" onclick="Edit3dVertex(2, .1)">++</button><br><br>
+      <button class="buta" onclick="DelClonesVert()" disabled>Del clones</button>
+      <button class="buta" onclick="DelAllVert()" disabled>Del all</button><br>
+      <button class="buta" onclick="AddVert()">Add vertices</button>
+      <input id="addv" type="number" value="5" min="1" max="12">
+      <button class="buta" onclick="DelVert()">Del vertices</button>
+      <br><br>
+      <button class="but7" onclick="EncodeDataLS(true)">Save & Exit</button>
+    </div>  
+    <div id="divE2d" style="display: none;"> <!-----------------------------------------Edit 2D----------->
+      <span style="font-size : 20pt;background-color:#ddd;color: black;font-weight: bolder;">Edit 2d point</span>
+      <button style="position: absolute; left: 1320px;" onclick="OptEdit('Bon')">X</button><br><br>
+      <span style="font-size : 16pt;background-color:#ddd;color: black;"><-----Selection Type----></span><br>
+      <img src="../_Script/SelectColor2d.png"><br>
+      <input id="selpy0" type="radio" name="selpntx" onclick="selPoint(0)" checked="checked">one
+      <input id="selpy1" type="radio" name="selpntx" onclick="selPoint(1)">mirrorX<br><br>
+      X :
+      <button class="but9" onclick="Edit2dVertex(0,-10)">--</button>
+      <button class="but9" onclick="Edit2dVertex(0,-1 )">-</button>
+      <input  class="inp9" id="edpx"  type="text" value="0"  >
+      <button class="but9" onclick="Edit2dVertex(0, 1 )">+</button>
+      <button class="but9" onclick="Edit2dVertex(0, 10)">++</button><br>
+      Y :
+      <button class="but9" onclick="Edit2dVertex(1,-10)">--</button>
+      <button class="but9" onclick="Edit2dVertex(1,-1 )">-</button>
+      <input  class="inp9" id="edpy"  type="text" value="0"  >
+      <button class="but9" onclick="Edit2dVertex(1, 1 )">+</button>
+      <button class="but9" onclick="Edit2dVertex(1, 10)">++</button><br><br>
+      <button class="but7" onclick="EncodeDataLS(true)">Save & Exit</button><br><br>
+    </div> 
+    <div id="divEFc" style="display: none;"> <!-----------------------------------------Edit Faces----------->
+      <span style="font-size : 20pt;background-color:#ddd;color: black;font-weight: bolder;">Edit &#916 --> &#8634</span> <!--&#8635:clockwise Open Circle Arrow-->
+      <button style="position: absolute; left: 1320px;" onclick="OptEdit('Bon')">X</button><br><br>
+      <input class="inp9" id="svt1"  type="text" value="" disabled>
+      <span style="font-size : 16pt;background-color:#ddd;color: black;"><--pick  point</span><br><br>
+      <input class="inp9" id="svt2"  type="text" value="" disabled >|
+      <input class="inp9" id="svt5"  type="text" value="" disabled >|<br>
+      <input class="inp9" id="svt3"  type="text" value="" disabled >|
+      <input class="inp9" id="svt6"  type="text" value="" disabled >| :vertices<br>
+      <input class="inp9" id="svt4"  type="text" value="" disabled >|
+      <input class="inp9" id="svt7"  type="text" value="" disabled >|<br><br>
+      <input class="inp9" id="svq1"  type="text" value="" disabled style="background-color:#fff">
+      <input class="inp9" id="svq2"  type="text" value="" disabled style="background-color:#fff"> <--pick near &#916<br>
+      <!--
+      &emsp; I° II° III°&emsp;&emsp;&emsp; I° II°<br>
+      <button id="btDetF" class="buta" onclick="GetOneFace()"  >Get 1 &#916</button>
+      <button id="btDetF" class="buta" onclick="GetTwoFaces()" >Get 2 &#916</button><br>
+      <button id="btAddF" class="buta" onclick="AddFace()" >Add &#916</button><br>
+      <button id="btDelF" class="buta" onclick="DelFace()" >Delete &#916</button>
+    -->
+      <button id="btRevF" class="buta" onclick="RevFace()"   disabled>Reverse &#916</button>
+      <button id="btDelF" class="buta" onclick="DelFace()"   disabled>Remove &#916</button><br>
+      <button id="btTrip" class="buta" onclick="TriFace()"   disabled>Triple &#916</button><br>
+      <button id="btAddC" class="buta" onclick="AddCent()"   disabled>Add Center</button><br>
+      <button id="btDiag" class="buta" onclick="DiagoSwap()" disabled>SwapDiago</button><br><br>
+      <button class="but7" onclick="EncodeDataLS(true)">Save & Exit</button>
+    </div> 
+    <div id="divEBd" style="display: none;"> <!------------------------------------Edit Bone Data----------->
+      <span style="font-size : 20pt;background-color:#ddd;color: black;font-weight: bolder;">Edit Bone Data</span>
+      <button style="position: absolute; left: 1320px;" onclick="OptEdit('Bon')">X</button><br><br>
+      <input id="bname" class="inp2" type="text" > : name<br><br>
+      <select id="OptBnPrnt" style="font-size:12pt;background-color:#ff0;width: 157px;height: 25px;" >
+        <script>WriteBonesPrnt();</script>
+      </select> : parent<br><br>
+      <---------------Position-----------> <br>
+      X :
+      <button class="but9" onclick="EditBonePosition(0,-.1)">--</button>
+      <button class="but9" onclick="EditBonePosition(0,-.01)">-</button>
+      <input  class="inp9" id="edbnx"  type="text" style="background-color: #ff0;">
+      <button class="but9" onclick="EditBonePosition(0, .01)">+</button>
+      <button class="but9" onclick="EditBonePosition(0, .1)">++</button><br>
+      Y :
+      <button class="but9" onclick="EditBonePosition(1,-.1)">--</button>
+      <button class="but9" onclick="EditBonePosition(1,-.01)">-</button>
+      <input  class="inp9" id="edbny"  type="text" style="background-color: #ff0;">
+      <button class="but9" onclick="EditBonePosition(1, .01)">+</button>
+      <button class="but9" onclick="EditBonePosition(1, .1)">++</button><br>
+      Z :
+      <button class="but9" onclick="EditBonePosition(2,-.1)">--</button>
+      <button class="but9" onclick="EditBonePosition(2,-.01)">-</button>
+      <input  class="inp9" id="edbnz"  type="text" style="background-color: #ff0;">
+      <button class="but9" onclick="EditBonePosition(2, .01)">+</button>
+      <button class="but9" onclick="EditBonePosition(2, .1)">++</button><br><br>
+    </div> 
+    <div style="display: none ;">  <!--   data debugging-->
+      <span id="dat1" style="font-size: 16pt;">data1</span><br>
+      <span id="dat2" style="font-size: 16pt;">data1</span><br>
+      <span id="dat3" style="font-size: 16pt;">data1</span><br>
+      <span id="dat4" style="font-size: 16pt;">data1</span>
+    </div>
+    <div id="divStt" style="display: none ;background-color:#aaf;height:500px">
+      <span style="font-size : 20pt;background-color:#aaf;color: black;font-weight: bolder;">Setting</span>
+      <button style="position: absolute; left: 1320px;" onclick="OptEdit('Stt')">X</button><br><br>
+      Vertex Ball size :<br> 
+      <input type="range" min="5"max="25" value="15" onchange ="SetBall(this.value)" style="width:200px">
+      <input type="text" class="inp4" id="inpb" value=15>
+    </div>
+  </td></tr>
+</table>  
+<script> 
+let btVer = document.getElementById("btVer");
+btVer.innerHTML="Ver."+$Ver;
+let canvas = document.getElementById("Canvas");
+let canvat = document.getElementById("Canvat");
+let canvan = document.getElementById("Canvan");
+let ctn = canvan.getContext("2d");
+let ctt = canvat.getContext("2d");
+var engine = new BABYLON.Engine(canvas, true,{preserveDrawingBuffer: true, stencil: true });
+var scene;
+var prt=0; //index submesh
+let pnt=true;
+let ang,positions;
+let SVNN=document.getElementById("SVNN");
+let SVDT=document.getElementById("SVDT");
+let iimg=document.getElementById("iimg");
+let vrtx=document.getElementById("vrtx");
+let vrtm=document.getElementById("vrtm");
+let dat1=document.getElementById("dat1");
+let dat2=document.getElementById("dat2");
+let dat3=document.getElementById("dat3");
+let dat4=document.getElementById("dat4");
+let spk=[],spm=[];
+let edvx=document.getElementById('edvx');
+let edvy=document.getElementById('edvy');
+let edvz=document.getElementById('edvz');
+let addv=document.getElementById('addv');
+let skevw=false;
+let ppa=0;
+let inilnk=iimg.src; //  default ini texture
+spk[0]=document.getElementById("spk0");
+spk[1]=document.getElementById("spk1");
+spk[2]=document.getElementById("spk2");
+spk[3]=document.getElementById("spk3");
+spk[4]=document.getElementById("spk4");
+spkE=document.getElementById("spkE");
+spm[0]=document.getElementById("spm0");
+spm[1]=document.getElementById("spm1");
+spm[2]=document.getElementById("spm2");
+spm[3]=document.getElementById("spm3");
+spm[4]=document.getElementById("spm4");
+document.title=$Ver;
+WriteBonesList();  //comoile list of bones
+//LocStoListItems();
+localStorage.clear(); // delete all keys   use options.reset command
+//ingrassa(.9);
+//abbassaUVocchi();
+//riducitesta();
+//abbassacollo();
+//ruotapiedeXZ();
+//accorciabusto();
+//abbassabraccio();
+//avvicinabraccio()
+//SaveEncodeDataLS();
+CloneBonesMirrorX();
+SetBall(8);
+Go(.3);
+
+function Part(n){
+  let v,c,s,x,y,z;
+  if(n==-1){Go(.3);return;}
+  let p;
+  prt=n;
+  zmsh=2.5;
+  document.getElementById("OptEdit").disabled=false;
+  document.getElementById("skvwopt").disabled=true;
+  document.getElementById("btpoint").disabled=false;
+  document.getElementById("splsh").style.display="none";
+  document.getElementById("DvBnsEdt").style.display="block";
+  document.getElementById("divFrames").style.display="none";
+  document.getElementById("divCanvat").style.display="block";
+  crpos=Bdt[prt][1]; // start point in to current bone
+  scene=createScene();     // Submeshes
+  //--------set parent absolute position
+  v=Bdt[n][0];// position
+  c=Bdt[n][4];// child
+  x=v.x;y=v.y;z=v.z;
+  while(c>0){
+    v=Bdt[c][0];// position
+    c=Bdt[c][4];
+    x+=v.x;y+=v.y;z+=v.z;
+  } 
+  camera.setTarget(new BABYLON.Vector3(x,y,z));
+//  camera.setTarget(v);
+//  camera.setTarget(Bdt[n][0]);
+  //----------------- get current bone absolute position
+  p=new BABYLON.Vector3(0,0,0);
+  let b=true;
+  do{p.addInPlace(Bdt[n][0]);
+    if(Bdt[n][4]==0){b=false;}else{n=Bdt[n][4];}}
+  while(b);  
+
+  p=new BABYLON.Vector3(parseInt(p.x*100)/100,parseInt(p.y*100)/100,parseInt(p.z*100)/100);
+  sph.position=p;
+  //--------------------------------------------------           
+  bickm(false,true);
+  upd = Cat.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+  uuv = Cat.getVerticesData(BABYLON.VertexBuffer.UVKind);
+  scene.registerBeforeRender(function() {
+
+      Cat.updateVerticesData(BABYLON.VertexBuffer.PositionKind,upd);
+      Cat.updateVerticesData(BABYLON.VertexBuffer.UVKind,uuv);
+      ppa+=.6;
+        for(let i=0;i<spp.length;i++){
+if(spp[i].material==rdwMat||spp[i].material==grwMat||spp[i].material==blwMat||spp[i].material==orwMat){
+          spp[i].rotation=new BABYLON.Vector3(0,ppa,0);}
+        }
+    });
+
+}
+
+function ConvertUVR(){
+//-----------------compile UVmap data 
+  uvs=[];
+  auv=[];      // 
+  uuv=[];
+  for(var i=0;i<UVR.length/2;i++){
+    x1=ofx+UVR[i*2]*zox;                  // ofx=300    ofy=500   zox=1.5    zoy=1
+    y1=ofy-UVR[i*2+1]*zoy-4;              // -4     drawTriangle  --> +4  
+    auv.push(x1);auv.push(y1);  // save points 2d
+    uvs.push(parseInt((x1/600)*100)/100);
+    uvs.push(parseInt((1-y1/500)*100)/100);
+    uuv.push(parseInt((x1/600)*100)/100);
+    uuv.push(parseInt((1-y1/500)*100)/100);
+  }
+}
+
+function skeView(){
+  skevw=!skevw;
+  Go(.3);
+}
+
+//------------------------------START
+function Go(ec){ //emissive color
+  LoadLocStrg();
+  let ap,b,c;
+  Hname=GetName();
+  document.getElementById("skvwopt").disabled=false;
+  document.getElementById("btpoint").disabled=true;
+  document.getElementById("splsh").style.display="block";
+  document.getElementById("DvBnsEdt").style.display="none";
+  document.getElementById("divFrames").style.display="block";
+  document.getElementById("divCanvat").style.display="none";
+  ConvertUVR();
+  try{scene.dispose();}catch{}
+  //-----------------------------------------create scene
+  scene = new BABYLON.Scene(engine);
+  var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0,100,0), scene);
+  if(camTy==0){
+    camera = new BABYLON.ArcRotateCamera("camera1",  0, 0, 0, new BABYLON.Vector3(0, 4, 0), scene);
+ //   camera.setPosition(new BABYLON.Vector3(0,0, zske ))
+//    camera.setTarget(BABYLON.Vector3.Zero());
+  }
+  else{  
+    camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, .2, -40), scene);
+    camera.setTarget(BABYLON.Vector3.Zero());}
+    camera.attachControl(canvas, true); 
+  
+  //let ground = BABYLON.MeshBuilder.CreateGround("ground", {height: 40, width: 40, subdivisions: 4});
+  
+  Zoom(zom-zske);
+  SkeMat = new BABYLON.StandardMaterial("", scene);
+  SkeMat.diffuseTexture = new BABYLON.Texture("textures/texture.png", scene);
+  SkeMat.diffuseTexture.hasAlpha = true;
+  SkeMat.backFaceCulling=true;
+  SkeMat.specularColor=new BABYLON.Color3(0,0,0); 
+  SkeMat.emissiveColor=new BABYLON.Color3(ec,ec,ec);
+  SkeMat.wireframe=false;
+  viewTexture();
+  DoSke();
+  document.getElementById("DataSkel").innerHTML="( "+pos.length/3+" vertices,      "+Gid.length/3+" faces )";
+  if(skevw){SkeViewer = createSkeletonViewer(Ske,Mske, 0.03, BABYLON.Color3.White(), scene);}
+  anm=[];
+  //saveTxt("Save Adt ?",JSON.stringify(Adt),"Adt.txt");//------test
+
+  Animation();    // non definisce la struttura dell'animazione ... la calcola 
+  AnimData(-1,0); // graphic functions
+
+  scene.clearColor = new BABYLON.Color4(.8,.8,.8, 1);
+}
+
+
+engine.runRenderLoop(function () {
+  if (scene) {scene.render();}
+});
+
+window.addEventListener("resize", function () {engine.resize();});
+
+
+
+
+
+</script>
+</body>
+</html>
