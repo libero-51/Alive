@@ -176,6 +176,9 @@ function WriteOptions(){
   EleOpt+="<option id='opMaya'   value= 'Maya'      >Maya</option>";
   EleOpt+="<option id='opPenta'  value= 'Penta'     >Penta</option>";
   EleOpt+="<option id='opSpeedy' value= 'Speedy'    >Speedy</option>";
+  EleOpt+="<option id='opLara'   value= 'Lara'      >Lara</option>";
+  EleOpt+="<option id='opMimi'   value= 'Mimi'      >Mimi</option>";
+  EleOpt+="<option id='opMarco'  value= 'Marco'     >Marco</option>";
   EleOpt+="<option id='opCow'    value= 'Cow'       >Cow</option>";
   EleOpt+="<option id='opFish'   value= 'Fish'      >Fish</option>";    
   EleOpt+="<option id='opTridy'  value= 'Tridy'     >Tridy</option>";
